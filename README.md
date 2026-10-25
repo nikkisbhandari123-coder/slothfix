@@ -191,3 +191,7 @@ No license has been specified yet. If you plan to publish SlothFix as an open-so
 ---
 
 Built to make debugging a little more thoughtful, one fix at a time.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
