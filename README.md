@@ -184,14 +184,13 @@ Contributions and suggestions are welcome. If you find a bug or want to improve 
 
 When contributing, avoid including API keys, credentials, private source code, or local model files in commits.
 
-## License
-
-No license has been specified yet. If you plan to publish SlothFix as an open-source project, add a `LICENSE` file that matches the permissions you want to grant others.
-
----
 
 Built to make debugging a little more thoughtful, one fix at a time.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+Built to make debugging a little more thoughtful, one fix at a time.
