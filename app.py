@@ -8,144 +8,326 @@ from typing import Dict, List, Tuple, Optional
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="SlothFix 🦥 · Local-First AI Debugger",
-    page_icon="🦥",
+    page_title="SlothFix · Developer Debugging Assistant",
+    page_icon="🪲",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# --- CUSTOM CSS FOR MODERN HACKATHON AESTHETICS ---
+# --- CUSTOM CSS FOR REFINED DEVELOPER TOOL AESTHETIC ---
 CUSTOM_CSS = """
 <style>
-/* Modern Typography and Palette */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+/* Modern Typography and Neutral Developer-Tool Palette */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 html, body, [class*="css"] {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #f1f5f9;
 }
 
-code, pre, .stCodeBlock {
+code, pre, .stCodeBlock, textarea {
     font-family: 'JetBrains Mono', monospace !important;
 }
 
-/* Header & Brand styling */
-.brand-title {
-    font-size: 2.4rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #f59e0b 0%, #10b981 50%, #3b82f6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-    margin-bottom: 0.2rem;
+/* Base background & container spacing */
+.stApp {
+    background-color: #0b0f19;
 }
 
-.brand-subtitle {
-    color: #94a3b8;
-    font-size: 1.05rem;
-    margin-bottom: 1.2rem;
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 1400px;
 }
 
-/* Badge styling */
-.badge-container {
+/* Header & Navbar styling */
+.navbar-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.2rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 1.25rem;
+    background: #111827;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
 }
 
-.sloth-badge {
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.brand-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.brand-tagline {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-left: 0.25rem;
+    font-weight: 400;
+}
+
+.navbar-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Compact status pills */
+.status-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.025em;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border: 1px solid transparent;
 }
 
-.badge-local {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.25));
+.pill-connected {
+    background: rgba(16, 185, 129, 0.1);
     color: #34d399;
-    border-color: rgba(52, 211, 153, 0.4);
+    border-color: rgba(16, 185, 129, 0.25);
 }
 
-.badge-gemma {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.25));
-    color: #60a5fa;
-    border-color: rgba(96, 165, 250, 0.4);
+.pill-offline {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.25);
 }
 
-.badge-safe {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.25));
-    color: #fbbf24;
-    border-color: rgba(251, 191, 36, 0.4);
+.pill-meta {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.15);
 }
 
-/* Feature cards */
-.feature-card {
-    background: rgba(22, 31, 48, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+.dot-green {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+}
+
+.dot-red {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #ef4444;
+}
+
+/* Workbench Cards */
+.workbench-card {
+    background: #111827;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 10px;
     padding: 1.2rem;
     margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
 }
 
-/* Butterfly effect cards */
-.cascade-card {
-    border-radius: 10px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.8rem;
-    border-left: 4px solid;
-    background: rgba(15, 23, 42, 0.6);
-}
-
-.cascade-l1 {
-    border-left-color: #ef4444;
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
-}
-
-.cascade-l2 {
-    border-left-color: #f59e0b;
-    background: linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
-}
-
-.cascade-l3 {
-    border-left-color: #06b6d4;
-    background: linear-gradient(90deg, rgba(6, 182, 212, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
-}
-
-.cascade-title {
-    font-weight: 700;
-    font-size: 0.95rem;
+.card-header-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    margin-bottom: 0.6rem;
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    margin-bottom: 0.3rem;
 }
 
-/* Safety banner */
-.safety-banner {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+/* Section dividers & labels */
+.section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 0.4rem;
+}
+
+/* Butterfly effect cascade cards */
+.cascade-card {
     border-radius: 8px;
-    padding: 0.75rem 1rem;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.75rem;
+    border-left: 3px solid;
+    background: #0f172a;
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.cascade-l1 {
+    border-left-color: #f87171;
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.06) 0%, #0f172a 100%);
+}
+
+.cascade-l2 {
+    border-left-color: #fbbf24;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.06) 0%, #0f172a 100%);
+}
+
+.cascade-l3 {
+    border-left-color: #38bdf8;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.06) 0%, #0f172a 100%);
+}
+
+.cascade-header {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.25rem;
+}
+
+.cascade-desc {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* Safety guarantee banner */
+.safety-banner {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
     margin-bottom: 1rem;
-    font-size: 0.85rem;
-    color: #fbbf24;
+    font-size: 0.82rem;
+    color: #6ee7b7;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
+}
+
+.unverified-banner {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    color: #fcd34d;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Empty state styling */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2.8rem 1.5rem;
+    background: #111827;
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    border-radius: 10px;
+    color: #94a3b8;
+}
+
+.empty-state-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-top: 0.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.empty-state-text {
+    font-size: 0.85rem;
+    color: #64748b;
+    max-width: 420px;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 480px;
+    text-align: left;
+}
+
+.feature-pill {
+    background: #1e293b;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.78rem;
+    color: #cbd5e1;
+}
+
+.feature-pill strong {
+    color: #f1f5f9;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+/* Native buttons styling refinements */
+button[kind="primary"] {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #042f2e !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em !important;
+}
+
+button[kind="primary"]:hover {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+}
+
+/* Sidebar polish */
+[data-testid="stSidebar"] {
+    background-color: #0d1322;
+    border-right: 1px solid rgba(148, 163, 184, 0.1);
 }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
+# --- SUPPORTED LANGUAGES & FILE EXTENSIONS ---
+LANG_EXTENSIONS = {
+    "python": "py",
+    "javascript": "js",
+    "typescript": "ts",
+    "go": "go",
+    "rust": "rs",
+    "java": "java",
+    "cpp": "cpp",
+    "sql": "sql",
+    "bash": "sh"
+}
+
 # --- PRESET SAMPLE CASES ---
 SAMPLE_CASES = {
-    "🐍 Python NoneType Error": {
+    "Python NoneType": {
         "language": "python",
         "code": """def fetch_and_format_user(user_id):
     # Simulates querying a database record
@@ -161,7 +343,7 @@ Traceback (most recent call last):
     full_name = user.get("first_name", "") + " " + user.get("last_name", "")
 """
     },
-    "🌐 JS undefined .map() Error": {
+    "JavaScript .map()": {
         "language": "javascript",
         "code": """function renderUserProfile(apiResponse) {
     // When apiResponse.data is missing or teamMembers is undefined
@@ -180,7 +362,7 @@ Traceback (most recent call last):
     at renderDashboard (pages/dashboard.js:18:12)
 """
     },
-    "🔢 Off-by-One Loop Error": {
+    "Off-by-One Loop": {
         "language": "python",
         "code": """def get_last_n_transactions(history, count):
     latest = []
@@ -210,7 +392,7 @@ def get_ollama_models(base_url: str = "http://localhost:11434") -> Tuple[bool, L
             return True, models_data, ""
         return False, [], f"Ollama returned HTTP status {response.status_code}"
     except requests.exceptions.ConnectionError:
-        return False, [], "Cannot connect to Ollama at http://localhost:11434. Is Ollama running?"
+        return False, [], "Cannot connect to Ollama at http://localhost:11434. Is the local daemon running?"
     except Exception as e:
         return False, [], str(e)
 
@@ -219,29 +401,25 @@ def extract_best_gemma_model(models: List[Dict]) -> Optional[str]:
     """Auto-detect the best installed Gemma model tag (preferring gemma4, then gemma3, etc.)."""
     model_names = [m.get("name", "") for m in models]
     
-    # Priority 1: Gemma 4 variants (e.g. gemma4:e2b)
     for name in model_names:
         if "gemma4" in name.lower():
             return name
             
-    # Priority 2: Gemma 3 variants
     for name in model_names:
         if "gemma3" in name.lower():
             return name
             
-    # Priority 3: Any Gemma model
     for name in model_names:
         if "gemma" in name.lower():
             return name
             
-    # Priority 4: First available model
     if model_names:
         return model_names[0]
         
     return None
 
 
-def generate_unified_diff(original: str, patch: str, filename: str = "code_snippet") -> str:
+def generate_unified_diff(original: str, patch: str, filename: str = "snippet") -> str:
     """Produce a standard git-style unified diff between original and patched code."""
     orig_lines = original.splitlines(keepends=True)
     patch_lines = patch.splitlines(keepends=True)
@@ -349,9 +527,9 @@ def query_gemma_streaming(base_url: str, model: str, prompt: str, temperature: f
 
 # --- SESSION STATE INITIALIZATION ---
 if "code_input" not in st.session_state:
-    st.session_state.code_input = SAMPLE_CASES["🐍 Python NoneType Error"]["code"]
+    st.session_state.code_input = SAMPLE_CASES["Python NoneType"]["code"]
 if "error_input" not in st.session_state:
-    st.session_state.error_input = SAMPLE_CASES["🐍 Python NoneType Error"]["error"]
+    st.session_state.error_input = SAMPLE_CASES["Python NoneType"]["error"]
 if "selected_lang" not in st.session_state:
     st.session_state.selected_lang = "python"
 if "analysis_results" not in st.session_state:
@@ -360,23 +538,19 @@ if "thinking_trace" not in st.session_state:
     st.session_state.thinking_trace = ""
 
 
-# --- SIDEBAR: LOCAL AI STATUS & MODEL SELECTION ---
+# --- SIDEBAR: OLLAMA STATUS & ENGINE CONFIGURATION ---
 with st.sidebar:
-    st.markdown("### 🦥 SlothFix Control Hub")
-    st.markdown("---")
+    st.markdown('<div class="card-header-label">LOCAL ENGINE CONFIGURATION</div>', unsafe_allow_html=True)
     
-    ollama_url = st.text_input("Ollama Host URL", value="http://localhost:11434", help="Local HTTP endpoint for Ollama.")
+    ollama_url = st.text_input(
+        "Ollama Endpoint",
+        value="http://localhost:11434",
+        help="Local HTTP API address for the Ollama daemon."
+    )
     
     connected, installed_models, conn_err = get_ollama_models(ollama_url)
     
     if connected and installed_models:
-        st.markdown(
-            '<div class="sloth-badge badge-local" style="width:100%; justify-content:center; margin-bottom:1rem;">'
-            '● Ollama Engine Connected'
-            '</div>', 
-            unsafe_allow_html=True
-        )
-        
         model_names = [m.get("name", "") for m in installed_models]
         best_detected = extract_best_gemma_model(installed_models)
         
@@ -388,122 +562,164 @@ with st.sidebar:
             "Selected Local Model",
             options=model_names,
             index=default_index,
-            help="Select the locally running model. Auto-detected Gemma models are prioritized."
+            help="Locally installed models discovered via /api/tags. Gemma is prioritized."
         )
         
-        # Display model metadata
         curr_meta = next((m for m in installed_models if m.get("name") == selected_model), None)
         if curr_meta and "details" in curr_meta:
             details = curr_meta["details"]
             param_size = details.get("parameter_size", "Unknown")
-            family = details.get("family", "Unknown")
             quant = details.get("quantization_level", "Unknown")
             runner = details.get("runner", "llamacpp")
             
+            st.markdown(
+                f'<div class="status-pill pill-connected" style="width: 100%; justify-content: center; margin-top: 0.25rem; margin-bottom: 0.75rem;">'
+                f'<span class="dot-green"></span> Engine Connected &middot; {selected_model}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            
             with st.expander("Model Specifications", expanded=False):
-                st.write(f"**Family:** `{family}`")
-                st.write(f"**Parameters:** `{param_size}`")
-                st.write(f"**Quantization:** `{quant}`")
-                st.write(f"**Engine:** `{runner}`")
-                st.write(f"**Privacy:** 100% On-Host Local RAM/VRAM")
+                st.caption(f"**Parameters:** {param_size}")
+                st.caption(f"**Quantization:** {quant}")
+                st.caption(f"**Runner:** {runner}")
+                st.caption("**Host RAM/VRAM:** 100% On-Device")
     else:
         st.markdown(
-            '<div class="sloth-badge" style="background:rgba(239,68,68,0.2); color:#f87171; width:100%; justify-content:center; margin-bottom:1rem;">'
-            '✕ Ollama Offline'
-            '</div>', 
+            '<div class="status-pill pill-offline" style="width: 100%; justify-content: center; margin-bottom: 0.75rem;">'
+            '<span class="dot-red"></span> Ollama Offline'
+            '</div>',
             unsafe_allow_html=True
         )
         st.error(f"Error: {conn_err}")
         selected_model = "gemma4:e2b"
-        
-        st.info("💡 **How to resolve:**\n1. Open your terminal\n2. Run `ollama serve`\n3. Verify with `ollama list`\n4. If missing Gemma: `ollama run gemma4:e2b`")
+        st.caption("To start Ollama, run `ollama serve` in your terminal.")
 
     st.markdown("---")
-    st.markdown("#### ⚙️ Inference Settings")
-    temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.2, step=0.05, help="Lower values produce more deterministic, accurate code fixes.")
-    max_tokens = st.slider("Max Output Tokens", min_value=500, max_value=2500, value=1500, step=50, help="Token budget for Gemma reasoning and response.")
+    st.markdown('<div class="card-header-label">INFERENCE PARAMETERS</div>', unsafe_allow_html=True)
+    temperature = st.slider(
+        "Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.2,
+        step=0.05,
+        help="Lower values yield deterministic and precise code fixes."
+    )
+    max_tokens = st.slider(
+        "Max Output Tokens",
+        min_value=500,
+        max_value=2500,
+        value=1500,
+        step=50,
+        help="Token budget for Gemma reasoning and response generation."
+    )
     
     st.markdown("---")
-    st.markdown("#### 🛡️ Local Safety Guarantee")
-    st.caption("• Zero external HTTP API calls\n• No third-party telemetry\n• No host-level code execution\n• Air-gapped capable")
+    st.markdown('<div class="card-header-label">SAFETY & PRIVACY GUARANTEE</div>', unsafe_allow_html=True)
+    st.caption("• 100% on-device local inference\n• Zero third-party telemetry or cloud APIs\n• Submitted code is never executed on host\n• Air-gap capable once weights are stored")
 
 
-# --- MAIN UI HEADER ---
-col_logo, col_badges = st.columns([2, 1])
+# --- BRANDED TOP NAVBAR ---
+status_badge_html = (
+    f'<span class="status-pill pill-connected"><span class="dot-green"></span> Connected &middot; {selected_model}</span>'
+    if connected else
+    '<span class="status-pill pill-offline"><span class="dot-red"></span> Ollama Offline</span>'
+)
 
-with col_logo:
-    st.markdown('<div class="brand-title">SlothFix 🦥</div>', unsafe_allow_html=True)
-    st.markdown('<div class="brand-subtitle">The Local-First AI Debugging & Blast-Radius Assistant</div>', unsafe_allow_html=True)
+navbar_html = f"""
+<div class="navbar-container">
+    <div class="navbar-brand">
+        <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="8" height="14" x="8" y="6" rx="4"></rect>
+                <path d="m19 7-3 2"></path>
+                <path d="m5 7 3 2"></path>
+                <path d="m19 19-3-2"></path>
+                <path d="m5 19 3-2"></path>
+                <path d="M20 13h-4"></path>
+                <path d="M4 13h4"></path>
+                <path d="m10 4 1 2"></path>
+                <path d="m14 4-1 2"></path>
+            </svg>
+        </div>
+        <div>
+            <div class="brand-title">SlothFix</div>
+            <div class="brand-tagline">Debug smarter. Ship safer.</div>
+        </div>
+    </div>
+    <div class="navbar-status">
+        {status_badge_html}
+        <span class="status-pill pill-meta">100% On-Device</span>
+        <span class="status-pill pill-meta">Host Safe</span>
+    </div>
+</div>
+"""
+st.markdown(navbar_html, unsafe_allow_html=True)
 
-with col_badges:
-    st.markdown(
-        '<div class="badge-container" style="justify-content: flex-end; margin-top: 0.8rem;">'
-        '<span class="sloth-badge badge-local">⚡ Local AI · Gemma via Ollama</span>'
-        '<span class="sloth-badge badge-gemma">🦥 100% On-Device</span>'
-        '<span class="sloth-badge badge-safe">🔒 Host Safe · No Exec</span>'
-        '</div>',
-        unsafe_allow_html=True
+
+# --- MAIN WORKSPACE: TWO-COLUMN WORKBENCH ON WIDE SCREENS ---
+col_input, col_output = st.columns([5, 6], gap="large")
+
+# === LEFT COLUMN: INPUT WORKSPACE ===
+with col_input:
+    st.markdown('<div class="section-label">SAMPLE BUG PRESETS</div>', unsafe_allow_html=True)
+    preset_cols = st.columns(3)
+    
+    preset_keys = list(SAMPLE_CASES.keys())
+    for idx, preset_name in enumerate(preset_keys):
+        with preset_cols[idx]:
+            if st.button(preset_name, use_container_width=True, key=f"btn_preset_{idx}"):
+                st.session_state.code_input = SAMPLE_CASES[preset_name]["code"]
+                st.session_state.error_input = SAMPLE_CASES[preset_name]["error"]
+                st.session_state.selected_lang = SAMPLE_CASES[preset_name]["language"]
+                st.session_state.analysis_results = None
+                st.rerun()
+
+    st.markdown('<div style="height: 0.5rem;"></div>', unsafe_allow_html=True)
+    
+    # Language selector & Code input
+    languages = list(LANG_EXTENSIONS.keys())
+    current_lang = st.session_state.selected_lang
+    lang_idx = languages.index(current_lang) if current_lang in languages else 0
+    selected_lang = st.selectbox(
+        "Programming Language",
+        options=languages,
+        index=lang_idx,
+        help="Select language syntax for highlighting and test generation."
     )
-
-# --- SAMPLE CASE SELECTOR PRESETS ---
-st.markdown("##### ⚡ Quick Test Presets:")
-preset_cols = st.columns(3)
-
-for idx, (preset_name, preset_data) in enumerate(SAMPLE_CASES.items()):
-    with preset_cols[idx]:
-        if st.button(preset_name, use_container_width=True, key=f"btn_preset_{idx}"):
-            st.session_state.code_input = preset_data["code"]
-            st.session_state.error_input = preset_data["error"]
-            st.session_state.selected_lang = preset_data["language"]
-            st.session_state.analysis_results = None
-            st.rerun()
-
-# --- INPUT SECTION: CODE & ERROR ---
-st.markdown("---")
-
-col_lang, col_space = st.columns([1, 3])
-with col_lang:
-    languages = ["python", "javascript", "typescript", "go", "rust", "java", "cpp", "sql", "bash"]
-    lang_idx = languages.index(st.session_state.selected_lang) if st.session_state.selected_lang in languages else 0
-    selected_lang = st.selectbox("Programming Language", options=languages, index=lang_idx)
     st.session_state.selected_lang = selected_lang
 
-col_code, col_error = st.columns([1.1, 0.9])
-
-with col_code:
     code_text = st.text_area(
-        "Buggy Source Code",
+        "Source Code",
         value=st.session_state.code_input,
-        height=240,
-        placeholder="Paste your source code snippet here...",
-        help="Paste the relevant function or block causing the error."
+        height=220,
+        placeholder="Paste your source code block here...",
+        help="Relevant function or module containing the bug."
     )
     st.session_state.code_input = code_text
 
-with col_error:
     error_text = st.text_area(
-        "Runtime Error / Traceback",
+        "Runtime Error / Stack Trace",
         value=st.session_state.error_input,
-        height=240,
+        height=160,
         placeholder="Paste runtime stack trace, error log, or console output...",
-        help="Paste the exact error message or stack trace."
+        help="Exact exception message or traceback from the terminal."
     )
     st.session_state.error_input = error_text
 
-# --- ACTION BUTTON ---
-analyze_clicked = st.button("🦥 Analyze & Debug with Gemma", type="primary", use_container_width=True)
+    st.markdown('<div style="height: 0.35rem;"></div>', unsafe_allow_html=True)
+    analyze_clicked = st.button("Analyze Bug", type="primary", use_container_width=True)
 
-# --- ANALYSIS PIPELINE EXECUTION ---
-if analyze_clicked:
-    if not code_text.strip():
-        st.warning("⚠️ Please provide source code to analyze.")
-    elif not error_text.strip():
-        st.warning("⚠️ Please provide the error message or traceback.")
-    elif not connected:
-        st.error(f"Cannot run local inference: {conn_err}. Please ensure Ollama is running (`ollama serve`).")
-    else:
-        # Construct systematic prompt
-        prompt = f"""You are SlothFix, an expert debugging AI powered by Gemma.
+    # --- INFERENCE EXECUTION PIPELINE ---
+    if analyze_clicked:
+        if not code_text.strip():
+            st.warning("Please provide source code to analyze.")
+        elif not error_text.strip():
+            st.warning("Please provide the runtime error message or stack trace.")
+        elif not connected:
+            st.error(f"Cannot perform local inference: {conn_err}. Verify that Ollama is running (`ollama serve`).")
+        else:
+            prompt = f"""You are SlothFix, an expert debugging AI powered by Gemma.
 Analyze the following code and error thoroughly:
 
 Programming Language: {selected_lang}
@@ -544,168 +760,216 @@ Format your response strictly using these markdown sections:
 - Verification Status: Model-generated proposal (unexecuted on host machine)
 - Rationale: [Brief justification]
 """
-        
-        status_box = st.status("🦥 SlothFix analyzing with local Gemma...", expanded=True)
-        thinking_area = st.empty()
-        
-        full_content = ""
-        full_thinking = ""
-        
-        try:
-            status_box.write(f"Connecting to local Ollama (`{selected_model}`)...")
-            t_start = time.time()
             
-            for kind, chunk in query_gemma_streaming(
-                base_url=ollama_url,
-                model=selected_model,
-                prompt=prompt,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                timeout=180
-            ):
-                if kind == "thinking":
-                    full_thinking += chunk
-                    thinking_area.info("🧠 **Gemma Analyzing:** Diagnosing interpreter state and identifying failure modes...")
-                elif kind == "content":
-                    full_content += chunk
-                elif kind == "done":
-                    break
-                    
-            elapsed = time.time() - t_start
-            status_box.update(label=f"✅ Analysis completed in {elapsed:.1f}s via {selected_model}!", state="complete", expanded=False)
-            thinking_area.empty()
+            status_box = st.status("Diagnosing runtime mechanics with local Gemma...", expanded=True)
+            thinking_placeholder = st.empty()
             
-            # Store parsed output in session state
-            st.session_state.analysis_results = parse_slothfix_response(full_content)
-            st.session_state.thinking_trace = full_thinking
+            full_content = ""
+            full_thinking = ""
             
-        except requests.exceptions.Timeout:
-            status_box.update(label="❌ Inference timed out", state="error")
-            st.error("Request timed out. Try reducing 'Max Output Tokens' or ensure your CPU/GPU isn't overloaded.")
-        except Exception as ex:
-            status_box.update(label="❌ Inference failed", state="error")
-            st.error(f"Error during inference: {ex}")
+            try:
+                status_box.write(f"Connecting to `{selected_model}` on localhost:11434...")
+                t_start = time.time()
+                
+                for kind, chunk in query_gemma_streaming(
+                    base_url=ollama_url,
+                    model=selected_model,
+                    prompt=prompt,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    timeout=180
+                ):
+                    if kind == "thinking":
+                        full_thinking += chunk
+                        thinking_placeholder.info("🧠 **Gemma Analyzing:** Diagnosing interpreter state and identifying failure modes...")
+                    elif kind == "content":
+                        full_content += chunk
+                    elif kind == "done":
+                        break
+                        
+                elapsed = time.time() - t_start
+                status_box.update(
+                    label=f"Analysis completed in {elapsed:.1f}s via {selected_model}",
+                    state="complete",
+                    expanded=False
+                )
+                thinking_placeholder.empty()
+                
+                # Parse structured diagnosis
+                st.session_state.analysis_results = parse_slothfix_response(full_content)
+                st.session_state.thinking_trace = full_thinking
+                st.rerun()
+                
+            except requests.exceptions.Timeout:
+                status_box.update(label="Inference request timed out", state="error")
+                st.error("Model generation timed out. Try reducing 'Max Output Tokens' or verify GPU/CPU load.")
+            except Exception as ex:
+                status_box.update(label="Inference failed", state="error")
+                st.error(f"Inference error: {ex}")
 
 
-# --- RESULTS DISPLAY ---
-if st.session_state.analysis_results:
-    results = st.session_state.analysis_results
-    
-    st.markdown("---")
-    
-    # Visible Safety & Non-Execution Notice
-    st.markdown(
-        '<div class="safety-banner">'
-        '<span>🛡️</span>'
-        '<span><strong>Safety Guarantee:</strong> All diagnoses, patches, and regression tests are statically synthesized by local Gemma AI. '
-        'For host protection, arbitrary submitted code is <strong>NEVER</strong> executed directly on your machine.</span>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-    
-    # Structured Tabbed View
-    tab_patch, tab_root, tab_butterfly, tab_test = st.tabs([
-        "🩹 Minimal Patch & Diff",
-        "🔍 Root Cause Diagnosis",
-        "🦋 Butterfly Effect (Downstream Cascade)",
-        "🧪 Generated Regression Test"
-    ])
-    
-    # TAB 1: MINIMAL PATCH & DIFF
-    with tab_patch:
-        st.markdown("### 🩹 Minimal Suggested Patch")
+# === RIGHT COLUMN: RESULTS WORKSPACE ===
+with col_output:
+    if st.session_state.analysis_results:
+        results = st.session_state.analysis_results
         
-        if results.get("patch_explanation"):
-            st.info(results["patch_explanation"])
-            
-        col_orig, col_fixed = st.columns(2)
-        with col_orig:
-            st.markdown("##### 🛑 Original Code")
-            st.code(st.session_state.code_input, language=st.session_state.selected_lang)
-            
-        with col_fixed:
-            st.markdown("##### ✅ SlothFix Corrected Patch")
-            fixed_code = results.get("patch_code") or "# No patch code extracted"
-            st.code(fixed_code, language=st.session_state.selected_lang)
-            
-        st.markdown("##### 📊 Unified Git-Style Diff")
-        diff_text = generate_unified_diff(st.session_state.code_input, fixed_code)
-        st.code(diff_text, language="diff")
-        
-        st.caption("Tip: Copy the patch above directly into your local IDE.")
-
-    # TAB 2: ROOT CAUSE DIAGNOSIS
-    with tab_root:
-        st.markdown("### 🔍 Root Cause Analysis")
-        root_cause_text = results.get("root_cause", "No root cause identified.")
-        st.markdown(root_cause_text)
-        
-        if results.get("confidence_safety"):
-            st.markdown("---")
-            st.markdown("##### 🎯 Model Assessment & Confidence")
-            st.markdown(results["confidence_safety"])
-
-    # TAB 3: BUTTERFLY EFFECT (DOWNSTREAM CASCADE)
-    with tab_butterfly:
-        st.markdown("### 🦋 The Butterfly Effect: Downstream Blast Radius")
+        # Safety & Non-execution notice
         st.markdown(
-            "A single uncaught exception can ripple across call stacks, service boundaries, and storage layers. "
-            "Here is Gemma's projected downstream chain of failure:"
-        )
-        
-        butterfly_raw = results.get("butterfly_effect", "")
-        
-        # Parse or render structured cascade cards
-        st.markdown(
-            '<div class="cascade-card cascade-l1">'
-            '<div class="cascade-title"><span style="color:#ef4444;">⚡ Level 1: Immediate Crash Site</span></div>'
-            '<div>Immediate unhandled exception terminating the local thread, coroutine, or function scope.</div>'
-            '</div>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<div class="cascade-card cascade-l2">'
-            '<div class="cascade-title"><span style="color:#f59e0b;">🌊 Level 2: Caller & Interface Cascades</span></div>'
-            '<div>Calling service receives 500 Internal Server Error, broken promises, or partial rendering states.</div>'
-            '</div>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<div class="cascade-card cascade-l3">'
-            '<div class="cascade-title"><span style="color:#06b6d4;">🌪️ Level 3: Silent & System Integrity Risks</span></div>'
-            '<div>Potential database transaction rollbacks, desynchronized cache keys, or aggressive retry loops overwhelming downstreams.</div>'
+            '<div class="safety-banner">'
+            '<span>🛡️</span>'
+            '<span><strong>Host Safe:</strong> All diagnoses, patches, and tests are statically synthesized by local Gemma AI and <strong>never executed</strong> on your machine.</span>'
             '</div>',
             unsafe_allow_html=True
         )
         
-        st.markdown("##### 📝 Detailed Cascade Breakdown:")
-        st.markdown(butterfly_raw if butterfly_raw else "No detailed cascade provided.")
+        # 4 Clean Developer Tabs
+        tab_patch, tab_root, tab_butterfly, tab_test = st.tabs([
+            "Minimal Patch & Diff",
+            "Root Cause Diagnosis",
+            "Butterfly Effect",
+            "Regression Test"
+        ])
+        
+        # TAB 1: MINIMAL PATCH & UNIFIED DIFF
+        with tab_patch:
+            if results.get("patch_explanation"):
+                st.info(results["patch_explanation"])
+                
+            col_orig, col_fixed = st.columns(2)
+            with col_orig:
+                st.markdown('<div class="section-label">ORIGINAL CODE</div>', unsafe_allow_html=True)
+                st.code(st.session_state.code_input, language=st.session_state.selected_lang)
+                
+            with col_fixed:
+                st.markdown('<div class="section-label">CORRECTED PATCH</div>', unsafe_allow_html=True)
+                fixed_code = results.get("patch_code") or "# No patch code extracted"
+                st.code(fixed_code, language=st.session_state.selected_lang)
+                
+            st.markdown('<div class="section-label">UNIFIED GIT DIFF</div>', unsafe_allow_html=True)
+            diff_text = generate_unified_diff(st.session_state.code_input, fixed_code)
+            st.code(diff_text, language="diff")
+            
+            # Action button: Download patch file
+            st.download_button(
+                label="📥 Download Patch (.diff)",
+                data=diff_text,
+                file_name="slothfix.diff",
+                mime="text/x-diff",
+                use_container_width=True
+            )
 
-    # TAB 4: GENERATED REGRESSION TEST
-    with tab_test:
-        st.markdown("### 🧪 Generated Regression Test")
-        st.markdown(
-            "Use this unit/regression test to verify the failure case and prevent future regressions. "
-            "Add this test to your project's CI pipeline."
-        )
-        
-        st.markdown(
-            '<div class="sloth-badge badge-safe" style="margin-bottom: 0.8rem;">'
-            '⚠️ Unverified Proposal · Static Analysis Only (Never executed on host machine)'
-            '</div>',
-            unsafe_allow_html=True
-        )
-        
-        reg_code = results.get("regression_test", "# No regression test generated")
-        st.code(reg_code, language=st.session_state.selected_lang)
+        # TAB 2: ROOT CAUSE DIAGNOSIS
+        with tab_root:
+            st.markdown('<div class="section-label">INTERPRETER & RUNTIME MECHANICS</div>', unsafe_allow_html=True)
+            root_cause_text = results.get("root_cause", "No root cause identified.")
+            st.markdown(root_cause_text)
+            
+            if results.get("confidence_safety"):
+                st.markdown("---")
+                st.markdown('<div class="section-label">MODEL ASSESSMENT & CONFIDENCE</div>', unsafe_allow_html=True)
+                st.markdown(results["confidence_safety"])
+
+        # TAB 3: BUTTERFLY EFFECT (DOWNSTREAM CASCADE)
+        with tab_butterfly:
+            st.markdown(
+                '<div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.85rem;">'
+                'Projected cascading blast radius across function scopes, service boundaries, and storage layers:'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            
+            st.markdown(
+                '<div class="cascade-card cascade-l1">'
+                '<div class="cascade-header" style="color: #f87171;">Level 1 &middot; Immediate Crash Site</div>'
+                '<div class="cascade-desc">Unhandled exception aborts the local thread, coroutine, or function execution context.</div>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                '<div class="cascade-card cascade-l2">'
+                '<div class="cascade-header" style="color: #fbbf24;">Level 2 &middot; Caller & Interface Cascades</div>'
+                '<div class="cascade-desc">Calling services receive HTTP 500 status codes, rejected promises, or broken render states.</div>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                '<div class="cascade-card cascade-l3">'
+                '<div class="cascade-header" style="color: #38bdf8;">Level 3 &middot; Silent System Integrity Risks</div>'
+                '<div class="cascade-desc">Partial transaction rollbacks, desynchronized caches, or cascading client retry storms.</div>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            
+            butterfly_raw = results.get("butterfly_effect", "")
+            if butterfly_raw:
+                st.markdown("---")
+                st.markdown('<div class="section-label">DETAILED IMPACT BREAKDOWN</div>', unsafe_allow_html=True)
+                st.markdown(butterfly_raw)
+
+        # TAB 4: GENERATED REGRESSION TEST
+        with tab_test:
+            st.markdown(
+                '<div class="unverified-banner">'
+                '<span>⚠️</span>'
+                '<span><strong>Unexecuted Suggestion:</strong> This test case is a statically synthesized proposal. It has <strong>NOT</strong> been executed or verified on your host machine.</span>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            
+            reg_code = results.get("regression_test", "# No regression test generated")
+            st.code(reg_code, language=st.session_state.selected_lang)
+            
+            ext = LANG_EXTENSIONS.get(st.session_state.selected_lang, "txt")
+            st.download_button(
+                label=f"📥 Download Regression Test (test_bug.{ext})",
+                data=reg_code,
+                file_name=f"test_bug.{ext}",
+                mime="text/plain",
+                use_container_width=True
+            )
+
+    else:
+        # === EMPTY WORKBENCH INITIAL STATE ===
+        empty_html = """
+        <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div class="empty-state-title">SlothFix Diagnostic Engine</div>
+            <div class="empty-state-text">
+                Select a sample bug preset on the left or paste your code snippet and runtime traceback, then click <strong>Analyze Bug</strong> to run on-device inference.
+            </div>
+            <div class="feature-grid">
+                <div class="feature-pill">
+                    <strong>Root Cause Diagnosis</strong>
+                    Pinpoints exact interpreter mechanics
+                </div>
+                <div class="feature-pill">
+                    <strong>Minimal Patch & Diff</strong>
+                    Clean surgical fix with unified git diff
+                </div>
+                <div class="feature-pill">
+                    <strong>The Butterfly Effect</strong>
+                    3-level downstream blast radius projection
+                </div>
+                <div class="feature-pill">
+                    <strong>Regression Test</strong>
+                    Pre-synthesized test case for CI pipelines
+                </div>
+            </div>
+        </div>
+        """
+        st.markdown(empty_html, unsafe_allow_html=True)
 
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown(
-    '<div style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 1rem 0;">'
-    '🦥 <strong>SlothFix</strong> · Built for Local-First Hackathons · '
-    'Zero Cloud Inference · Privacy Guaranteed · Powered by Gemma & Ollama'
-    '</div>',
-    unsafe_allow_html=True
-)
+footer_html = """
+<div style="display: flex; justify-content: space-between; align-items: center; color: #64748b; font-size: 0.8rem; padding: 0.5rem 0;">
+    <div><strong>SlothFix</strong> &middot; Debug smarter. Ship safer.</div>
+    <div>100% Local Inference &middot; Google Gemma via Ollama &middot; Zero Cloud Telemetry</div>
+</div>
+"""
+st.markdown(footer_html, unsafe_allow_html=True)

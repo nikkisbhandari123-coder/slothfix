@@ -1,7 +1,7 @@
-# SlothFix 🦥
+# SlothFix 🪲
 
-> **The Local-First AI Debugging & Blast-Radius Assistant**  
-> *Debug methodically so your software runs fast. 100% on-device inference via Gemma and Ollama. Zero cloud dependencies, zero IP leakage.*
+> **Debug smarter. Ship safer.**  
+> *The local-first AI debugging and blast-radius assistant. 100% on-device inference via Google Gemma and Ollama. Zero cloud dependencies, zero IP leakage.*
 
 ---
 
@@ -86,22 +86,22 @@ Follow this 2-minute walkthrough during your hackathon demo:
 - [ ] **1. Show Local-First Connectivity**:
   - Point out the green **"● Ollama Engine Connected"** badge in the sidebar.
   - Show the auto-detected model tag (`gemma4:e2b`) and model specifications (parameter size, quantization, local RAM/VRAM runner).
-- [ ] **2. Run Preset 1: Python NoneType Error**:
-  - Click the **`🐍 Python NoneType Error`** preset button.
-  - Hit **`🦥 Analyze & Debug with Gemma`**.
-  - Show the live thinking token stream and completion timer.
+- [ ] **2. Run Preset 1: Python NoneType**:
+  - Click the **`Python NoneType`** preset button.
+  - Hit **`Analyze Bug`**.
+  - Show the live analysis status and completion timer.
 - [ ] **3. Inspect the Minimal Patch & Diff**:
   - Switch to the **Minimal Patch & Diff** tab.
-  - Highlight the side-by-side original vs. corrected code and the color-coded unified diff.
+  - Highlight the side-by-side original vs. corrected code, color-coded unified diff, and the one-click **Download Patch (.diff)** button.
 - [ ] **4. Highlight the Butterfly Effect**:
   - Switch to the **Butterfly Effect** tab.
   - Explain how SlothFix warns developers of Level 2 (Caller API 500s) and Level 3 (corrupted DB transactions/retry storms) before code reaches staging.
 - [ ] **5. Showcase the Regression Test**:
-  - Show the ready-to-copy `pytest` regression test preventing future regressions.
+  - Review the ready-to-copy unit test with the explicit **Unexecuted Suggestion** disclaimer and one-click download button.
 - [ ] **6. Inspect Concise Root Cause & Confidence**:
   - Review the concise interpreter mechanics explanation and model confidence assessment.
 - [ ] **7. Test JavaScript Preset**:
-  - Click **`🌐 JS undefined .map() Error`** to demonstrate multi-language versatility.
+  - Click **`JavaScript .map()`** to demonstrate multi-language versatility.
 
 ---
 
